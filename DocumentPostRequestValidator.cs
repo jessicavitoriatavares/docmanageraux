@@ -1,0 +1,36 @@
+﻿using FluentValidation;
+using DocManager.Application.Contracts.Users.Request;
+using DocManager.Application.Data.MySql.Repositories;
+using DocManager.Application.Errors;
+using DocManager.Application.Helpers;
+using DocManager.Application.Contracts.Product.Request;
+using DocManager.Application.Contracts.Document.Request;
+
+namespace DocManager.Application.Validators
+{
+    public class DocumentPostRequestValidator : AbstractValidator<DocumentPostRequest>
+    {
+       public UserPostRequestValidator(UserRepository repository)
+        {
+            RuleFor(contract => contract.name
+                .Must(_name => !string.IsNullOrEmpty(_name))
+                .WithMessage(documentType_Post_BadRequest_id_Cannot_Be_Null_Or_Empty.Description());
+
+            RuleFor(contract => contract.Email)
+                .Must(_email => !string.IsNullOrEmpty(_email))
+                .WithMessage(DocManagerErrors.User_Post_BadRequest_Email_Cannot_Be_Null_Or_Empty.Description());
+
+            RuleFor(contract => contract.Password)
+                .Must(_pass => !string.IsNullOrEmpty(_pass))
+                .WithMessage(DocManagerErrors.User_Post_BadRequest_Password_Cannot_Be_Null_Or_Empty.Description());
+
+            RuleFor(contract => contract.Email)
+                .Must(email =>
+                {
+                    var userExists = repository.GetUserByEmail(email).Result;
+                    return userExists == null;
+                })
+                .WithMessage(DocManagerErrors.User_Post_BadRequest_Email_Cannot_Be_Duplicated.Description());
+        }
+    }
+}
